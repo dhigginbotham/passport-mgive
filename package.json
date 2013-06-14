@@ -1,0 +1,25 @@
+{
+  "name": "passport-mgive",
+  "version": "0.0.5",
+  "description": "Passport strategy for the mGive authentication api.",
+  "main": "lib/strategy.coffee",
+  "private": "true",
+  "scripts": {
+    "test": "mocha --require should -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "author": "David Higginbotham <davehigginbotham@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "passport": "0.1.x",
+    "request": "2.20.x"
+  },
+  "devDependencies": {
+    "coffee-script": ">= 1.3.3",
+    "should": "1.2.x",
+    "mocha": "1.9.x"
+  }
+}
