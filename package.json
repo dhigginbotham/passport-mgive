@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "none"
+    "url": "git://github.com/dhigginbotham/passport-mgive"
   },
   "author": "David Higginbotham <davehigginbotham@gmail.com>",
   "license": "MIT",
