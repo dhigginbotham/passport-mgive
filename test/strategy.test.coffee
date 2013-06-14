@@ -28,4 +28,3 @@ describe "passport-mgive", () ->
       endOfDesc new Error argurments
 
     strategy.authenticate req
-
