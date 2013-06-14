@@ -3,7 +3,9 @@
 [passport.js](http://passportjs.org/) strategy for the mGive public api
 
 ## Installation
-```npm install https://github.com/dhigginbotham/passport-mgive```
+```
+npm install https://github.com/dhigginbotham/passport-mgive
+```
 
 # Usage
 
