@@ -1,11 +1,9 @@
-
 # Author: [David Higginbotham](davehigginbotham@gmail.com)
 # License: MIT
 
 passport = require "passport"
 request = require "request"
 util = require "util"
-
 
 ### BadRequestError ###
 # handles bad requests with custom messages, borrowed from passport.js (local) thanks!
@@ -53,19 +51,18 @@ Strategy::authenticate = (req, options) ->
   if req.query? && req.query[options.username || "username"] then @username = req.query[options.username || "username"]
   if req.query? && req.query[options.password || "password"] then @password = req.query[options.password || "password"]
 
-  @fail new BadRequestError options.badRequestMessage || "Missing credentials" if !@username or !@password
+  return @fail new BadRequestError options.badRequestMessage || "Missing credentials" if !@username or !@password
 
   self = @
+
+  verified = (err, user, info) ->
+    if err? then return self.error err
+    if !user then return self.fail info
+    self.success user, info
   
-  if @passAuthentication
-
-    @userProfile req, (err, profile) ->
-      self.verify @username, @password, (err, resident) ->
-        self.fail err if err?
-        self.success profile
-
-  else @fail "Unauthorized"
-
+  # run `self.verify` to ensure this user is okay'd
+  if @passAuthentication == true then self.verify self.username, self.password, verified
+  else return @fail "Unauthorized"
 
 ### Strategy::userProfile ###
 # this extends the initial object, sorts some things around
@@ -81,36 +78,29 @@ Strategy::authenticate = (req, options) ->
 #  session.passport.sessionId = "sessionId"
 #  session.passport.accessToken = "accessToken"
 #  session.flash = {}
+# 
+# Strategy::userProfile = (req, done) ->
+#   self = @
+#   try
+#     @Auth @username, @password, (err, user) ->
+#       return done err, null if err?
+#       return done null, user
+#   catch err
+#     return done err, null
 #  ```
-Strategy::userProfile = (req, done) ->
-
-  self = @
-  
-  try
-    @Auth @username, @password, (err, user) ->
-      done err, null if err?
-      json = JSON.parse user
-
-      profile = provider: "mgive"
-      profile.username = @_body || self.username
-      profile.sessionId = json.SessionId 
-      profile.accessToken = json.AccessToken
-      profile.ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress
-
-      done null, profile
-  catch err
-    done err, null
 
 ### Strategy::Auth ###
 # do auth to ensure user credentials and create userprofile
 Strategy::Auth = (username, password, done) ->
-  
+
+  self = @
+
   request
     method: "POST"
     uri: "http://services.mobileaccord.com/api.ashx?responseType=json&op=login&username=#{username}&password=#{password}"
-    (e, r, b) ->
-      done e, null if e?
-      @_body = b if b?
-      done null, b if b?  
+    (err, r, body) ->
+      if err? then return done err, null
+      if body? then self._body = JSON.parse body
+      if body? then return done null, self._body
 
 module.exports = Strategy

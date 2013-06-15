@@ -91,8 +91,91 @@ passport.deserializeUser (obj, done) -&gt;
             
             <div class="content"><div class='highlight'><pre>
 passport.use <span class="keyword">new</span> mGiveStrategy (username, password, done) -&gt;
-  <span class="property">@Auth</span> username, password, (err, user) -&gt;
-    <span class="keyword">if</span> err? done err, <span class="literal">null</span> <span class="keyword">else</span> done <span class="literal">null</span>, user</pre></div></div>
+
+  <span class="property">@Auth</span> username, password, (err, auth) -&gt;
+    <span class="keyword">if</span> err? <span class="keyword">then</span> <span class="keyword">return</span> done err, <span class="literal">null</span>
+
+    User.findOne username: username, (err, user) -&gt;
+      <span class="keyword">if</span> err? <span class="keyword">then</span> <span class="keyword">return</span> done err, <span class="literal">null</span>
+      <span class="keyword">if</span> user?</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>creating our update object with <code>Object.create</code>
+in theory it should only be cast as an <code>Object</code>
+once, however we may need to refactor this later
+as a FCF</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        updateUser =
+          last_login: <span class="keyword">new</span> Date auth.updated_time
+          mgive: auth</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>firing <code>User.update</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        User.update username: username, updateUser, (err) -&gt;
+          <span class="keyword">if</span> err? <span class="keyword">then</span> <span class="keyword">return</span> done err, <span class="literal">null</span> 
+          <span class="keyword">if</span> user? <span class="keyword">then</span> <span class="keyword">return</span> done <span class="literal">null</span>, user
+      <span class="keyword">else</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>there&#39;s no user found, so we&#39;ll create one here
+based on our expectations of how the object will
+look</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        user = <span class="keyword">new</span> User
+          username: username
+          mgive: auth
+          type: <span class="string">"mgive"</span>
+          admin: <span class="literal">true</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>firing <code>User.save</code>, this should work -- otherwise some
+data somewhere is missing, check the <code>user</code> object
+above</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        user.save (err, newUser) -&gt;
+          <span class="keyword">if</span> err? <span class="keyword">then</span> <span class="keyword">return</span> done err, <span class="literal">null</span>
+          <span class="keyword">if</span> newUser? <span class="keyword">then</span> <span class="keyword">return</span> done <span class="literal">null</span>, newUser</pre></div></div>
             
         </li>
         

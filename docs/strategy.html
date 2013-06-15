@@ -27,18 +27,6 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-2">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>
               <p>Author: <a href="davehigginbotham@gmail.com">David Higginbotham</a>
 License: MIT</p>
 
@@ -52,11 +40,11 @@ util = require <span class="string">"util"</span></pre></div></div>
         </li>
         
         
-        <li id="section-3">
+        <li id="section-2">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+                <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
               <h2>BadRequestError</h2>
 <p>handles bad requests with custom messages, borrowed from passport.js (local) thanks!</p>
@@ -75,11 +63,11 @@ BadRequestError::__proto__ = Error::</pre></div></div>
         </li>
         
         
-        <li id="section-4">
+        <li id="section-3">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
               <h2>mGive Strategy</h2>
 <p>passport.js strategy stores username, accessToken, sessionId</p>
@@ -101,9 +89,22 @@ BadRequestError::__proto__ = Error::</pre></div></div>
   <span class="property">@username</span> = options.username || <span class="string">"username"</span>
   <span class="property">@password</span> = options.password || <span class="string">"password"</span>
   <span class="property">@verify</span> = verify
-  @
+  @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>inherit our <code>Strategy object with passport.Strategy</code></p>
 
-util.inherits Strategy, passport.Strategy</pre></div></div>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>util.inherits Strategy, passport.Strategy</pre></div></div>
             
         </li>
         
@@ -129,18 +130,14 @@ util.inherits Strategy, passport.Strategy</pre></div></div>
   <span class="keyword">if</span> req.query? &amp;&amp; req.query[options.username || <span class="string">"username"</span>] <span class="keyword">then</span> <span class="property">@username</span> = req.query[options.username || <span class="string">"username"</span>]
   <span class="keyword">if</span> req.query? &amp;&amp; req.query[options.password || <span class="string">"password"</span>] <span class="keyword">then</span> <span class="property">@password</span> = req.query[options.password || <span class="string">"password"</span>]
 
-  <span class="property">@fail</span> <span class="keyword">new</span> BadRequestError options.badRequestMessage || <span class="string">"Missing credentials"</span> <span class="keyword">if</span> !<span class="property">@username</span> <span class="keyword">or</span> !<span class="property">@password</span>
+  <span class="keyword">return</span> <span class="property">@fail</span> <span class="keyword">new</span> BadRequestError options.badRequestMessage || <span class="string">"Missing credentials"</span> <span class="keyword">if</span> !<span class="property">@username</span> <span class="keyword">or</span> !<span class="property">@password</span>
 
   self = @
-  
-  <span class="keyword">if</span> <span class="property">@passAuthentication</span>
 
-    <span class="property">@userProfile</span> req, (err, profile) -&gt;
-      self.verify <span class="property">@username</span>, <span class="property">@password</span>, (err, resident) -&gt;
-        self.fail err <span class="keyword">if</span> err?
-        self.success profile
-
-  <span class="keyword">else</span> <span class="property">@fail</span> <span class="string">"Unauthorized"</span></pre></div></div>
+  <span class="function"><span class="title">verified</span></span> = (err, user, info) -&gt;
+    <span class="keyword">if</span> err? <span class="keyword">then</span> <span class="keyword">return</span> self.error err
+    <span class="keyword">if</span> !user <span class="keyword">then</span> <span class="keyword">return</span> self.fail info
+    self.success user, info</pre></div></div>
             
         </li>
         
@@ -148,8 +145,24 @@ util.inherits Strategy, passport.Strategy</pre></div></div>
         <li id="section-6">
             <div class="annotation">
               
-              <div class="pilwrap for-h2">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>run <code>self.verify</code> to ensure this user is okay&#39;d</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="property">@passAuthentication</span> == <span class="literal">true</span> <span class="keyword">then</span> self.verify self.username, self.password, verified
+  <span class="keyword">else</span> <span class="keyword">return</span> <span class="property">@fail</span> <span class="string">"Unauthorized"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <h2>Strategy::userProfile</h2>
 <p>this extends the initial object, sorts some things around</p>
@@ -161,37 +174,27 @@ util.inherits Strategy, passport.Strategy</pre></div></div>
  session.passport.username = &quot;username&quot;
  session.passport.sessionId = &quot;sessionId&quot;
  session.passport.accessToken = &quot;accessToken&quot;
- session.flash = {}</code></pre>
+ session.flash = {}
+
+Strategy::userProfile = (req, done) -&gt;
+  self = @
+  try
+    @Auth @username, @password, (err, user) -&gt;
+      return done err, null if err?
+      return done null, user
+  catch err
+    return done err, null</code></pre>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>Strategy::<span class="function"><span class="title">userProfile</span></span> = (req, done) -&gt;
-
-  self = @
-  
-  <span class="keyword">try</span>
-    <span class="property">@Auth</span> <span class="property">@username</span>, <span class="property">@password</span>, (err, user) -&gt;
-      done err, <span class="literal">null</span> <span class="keyword">if</span> err?
-      json = JSON.parse user
-
-      profile = provider: <span class="string">"mgive"</span>
-      profile.username = <span class="property">@_body</span> || self.username
-      profile.sessionId = json.SessionId 
-      profile.accessToken = json.AccessToken
-      profile.ip = req.headers[<span class="string">"x-forwarded-for"</span>] || req.connection.remoteAddress
-
-      done <span class="literal">null</span>, profile
-  <span class="keyword">catch</span> err
-    done err, <span class="literal">null</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <h2>Strategy::Auth</h2>
 <p>do auth to ensure user credentials and create userprofile</p>
@@ -199,14 +202,16 @@ util.inherits Strategy, passport.Strategy</pre></div></div>
             </div>
             
             <div class="content"><div class='highlight'><pre>Strategy::<span class="function"><span class="title">Auth</span></span> = (username, password, done) -&gt;
-  
+
+  self = @
+
   request
     method: <span class="string">"POST"</span>
     uri: <span class="string">"http://services.mobileaccord.com/api.ashx?responseType=json&amp;op=login&amp;username=<span class="subst">#{username}</span>&amp;password=<span class="subst">#{password}</span>"</span>
-    (e, r, b) -&gt;
-      done e, <span class="literal">null</span> <span class="keyword">if</span> e?
-      <span class="property">@_body</span> = b <span class="keyword">if</span> b?
-      done <span class="literal">null</span>, b <span class="keyword">if</span> b?  
+    (err, r, body) -&gt;
+      <span class="keyword">if</span> err? <span class="keyword">then</span> <span class="keyword">return</span> done err, <span class="literal">null</span>
+      <span class="keyword">if</span> body? <span class="keyword">then</span> self._body = JSON.parse body
+      <span class="keyword">if</span> body? <span class="keyword">then</span> <span class="keyword">return</span> done <span class="literal">null</span>, self._body
 
 module.exports = Strategy</pre></div></div>
             
