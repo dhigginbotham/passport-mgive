@@ -30,7 +30,7 @@ Strategy = (options, verify) ->
   passport.Strategy.call @
   
   @name = "mgive"
-  @passAuthentication = options.passAuthentication || true
+  @passAuthentication = options.passAuthentication
   @username = options.username || "username"
   @password = options.password || "password"
   @verify = verify
@@ -55,14 +55,13 @@ Strategy::authenticate = (req, options) ->
 
   self = @
 
-  verified = (err, user, info) ->
-    if err? then return self.error err
-    if !user then return self.fail info
-    self.success user, info
+  verified = (err, user) ->
+    return if err? then self.fail err
+    return if user? then self.pass user
   
   # run `self.verify` to ensure this user is okay'd
-  if @passAuthentication == true then self.verify self.username, self.password, verified
-  else return @fail "Unauthorized"
+  self.verify self.username, self.password, verified
+  # else return @fail "Unauthorized"
 
 ### Strategy::userProfile ###
 # this extends the initial object, sorts some things around
@@ -98,9 +97,16 @@ Strategy::Auth = (username, password, done) ->
   request
     method: "POST"
     uri: "http://services.mobileaccord.com/api.ashx?responseType=json&op=login&username=#{username}&password=#{password}"
-    (err, r, body) ->
+    (err, resp, body) ->
+
       if err? then return done err, null
+
       if body? then self._body = JSON.parse body
-      if body? then return done null, self._body
+
+      if self._body.AccessToken?
+        done null, self._body
+
+      else
+        done body, null
 
 module.exports = Strategy
