@@ -55,9 +55,9 @@ Strategy::authenticate = (req, options) ->
 
   self = @
 
-  verified = (err, user) ->
+  verified = (err, user, info) ->
     return if err? then self.fail err
-    return if user? then self.pass user
+    return if user? then self.success user
   
   # run `self.verify` to ensure this user is okay'd
   self.verify self.username, self.password, verified
@@ -103,9 +103,9 @@ Strategy::Auth = (username, password, done) ->
 
       if body? then self._body = JSON.parse body
 
+      # console.log @
       if self._body.AccessToken?
         done null, self._body
-
       else
         done body, null
 
